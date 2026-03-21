@@ -148,7 +148,7 @@ class ConstOp : public XlaOpKernel {
           // Make a dummy op to store shape expression
           xla::XlaOp zero = xla::ConstantR0<int32>(b, 0);
           xla::XlaOp dummy_op = xla::Broadcast(zero, shape.dim_sizes(), shape.get_expressions());
-          xla::XlaOp outerbatch = GetOuterBatchValue(dummy_op);
+          xla::XlaOp outerbatch = xla::GetOuterBatchValue(dummy_op);
           // TODO: Handle expression arithmetics * + - /
           dimension_constants.push_back(xla::Reshape(outerbatch, {1}));
         } else {
