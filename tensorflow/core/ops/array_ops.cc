@@ -720,7 +720,7 @@ REGISTER_OP("Const")
     .Output("output: dtype")
     .Attr("value: tensor")
     .Attr("user_inferred_shape: shape = {}")
-    .Attr("hasDynamic: bool = false")
+    .Attr("has_dynamic: bool = false")
     .Attr("dtype: type")
     .SetShapeFn([](InferenceContext* c) {
       const TensorProto* proto = nullptr;
