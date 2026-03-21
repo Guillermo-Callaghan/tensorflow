@@ -120,7 +120,7 @@ class ConstOp : public XlaOpKernel {
     bool has_dynamic = false;
     TensorShapeProto inferred_shape_proto;
     TensorShape shape;
-    if (GetNodeAttr(ctx->op_kernel().def(), "hasDynamic", &has_dynamic).ok() &&
+    if (GetNodeAttr(ctx->op_kernel().def(), "has_dynamic", &has_dynamic).ok() &&
         has_dynamic) {
       if (GetNodeAttr(ctx->op_kernel().def(), "user_inferred_shape",
                       &inferred_shape_proto)
@@ -147,7 +147,8 @@ class ConstOp : public XlaOpKernel {
         if (shape.get_expression(i)->is_dynamic()) {
           // Make a dummy op to store shape expression
           xla::XlaOp zero = xla::ConstantR0<int32>(b, 0);
-          xla::XlaOp dummy_op = xla::Broadcast(zero, shape.dim_sizes(), shape.get_expressions());
+          xla::XlaOp dummy_op = xla::Broadcast(zero, shape.dim_sizes(),
+                                               shape.get_expressions());
           xla::XlaOp outerbatch = xla::GetOuterBatchValue(dummy_op);
           // TODO: Handle expression arithmetics * + - /
           dimension_constants.push_back(xla::Reshape(outerbatch, {1}));
@@ -158,7 +159,8 @@ class ConstOp : public XlaOpKernel {
         }
       }
 
-      xla::XlaOp combined_shape_constant = xla::ConcatInDim(b, dimension_constants, 0);
+      xla::XlaOp combined_shape_constant = xla::ConcatInDim(b,
+                                                        dimension_constants, 0);
       ctx->SetOutput(0, combined_shape_constant);
     } else {
       Tensor tensor(proto_.dtype());

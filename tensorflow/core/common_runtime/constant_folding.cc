@@ -443,12 +443,16 @@ bool GetShapeFromArgNode(const Node* node, TensorShapeProto* out_shape) {
 
     Node* input_node = edge->src();
     if (input_node->type_string() == "_Arg") {
-      std::vector<TensorShapeProto> shapes_vector;
-      if (GetNodeAttr(input_node->def(), "_output_shapes", &shapes_vector)
+      std::vector<TensorShapeProto> shapes;
+      if (GetNodeAttr(input_node->def(), "_output_shapes", &shapes)
               .ok() &&
-          !shapes_vector.empty()) {
-        *out_shape = shapes_vector[0];
-        return true;
+          !shapes.empty()) {
+        for (auto expression : TensorShape(shapes[0]).get_expressions()) {
+          if (expression->is_dynamic()) {
+            *out_shape = shapes[0];
+            return true;
+          }
+        }
       }
     }
   }
@@ -469,10 +473,7 @@ void AddShapeNodeToConstantGraph(
     const ConstantFoldNameGenerator& generate_new_name, Graph* constant_graph) {
 
   TensorShapeProto user_inferred_shape;
-  bool hasDynamic = false;
-  if (GetShapeFromArgNode(n, &user_inferred_shape)) {
-    hasDynamic = true;
-  }
+  bool has_dynamic = GetShapeFromArgNode(n, &user_inferred_shape);
 
   std::vector<Node*>& added = (*node_map)[n];
   const string& node_name = n->name();
@@ -480,7 +481,7 @@ void AddShapeNodeToConstantGraph(
     auto builder =
         NodeDefBuilder(generate_new_name(constant_graph, node_name), "Const")
             .Attr("dtype", t.dtype())
-            .Attr("hasDynamic", hasDynamic)
+            .Attr("has_dynamic", has_dynamic)
             .Attr("user_inferred_shape", user_inferred_shape)
             .Attr("value", t);
     NodeDef def;
@@ -604,13 +605,10 @@ bool ReplaceTensorWithConstant(
   Node* constant_node;
 
   TensorShapeProto user_inferred_shape;
-  bool hasDynamic = false;
-  if (GetShapeFromArgNode(tensor.first, &user_inferred_shape)) {
-    hasDynamic = true;
-  }
+  bool has_dynamic = GetShapeFromArgNode(tensor.first, &user_inferred_shape);
   auto builder = NodeDefBuilder(generate_new_name(graph, node_name), "Const")
                      .Attr("dtype", constant.dtype())
-                     .Attr("hasDynamic", hasDynamic)
+                     .Attr("has_dynamic", has_dynamic)
                      .Attr("user_inferred_shape", user_inferred_shape)
                      .Attr("value", constant);
   if (partition_device) {
