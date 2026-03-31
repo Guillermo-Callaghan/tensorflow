@@ -117,6 +117,12 @@ class StridedSliceOp : public OpKernel {
                      &is_simple_slice, &slice_dim0, &begin, &end, &strides));
     const Tensor& input = context->input(0);
 
+    LOG(INFO) << "[Guillermo] " << context->op_kernel().def().name();
+    LOG(INFO) << "[Guillermo] Number of inputs: " << context->num_inputs();
+    for (int i = 0; i < context->num_inputs(); ++i) {
+      LOG(INFO) << "\tInput[" << i << "]: " << context->input(i).DebugString();
+    }
+
     // Optimization #1, slice is a no-op plus reshape
     if (is_identity) {
       VLOG(1) << "Strided slice identity ";
@@ -124,6 +130,7 @@ class StridedSliceOp : public OpKernel {
       OP_REQUIRES(context, tmp.CopyFrom(input, final_shape),
                   errors::Internal("Copy failed"));
       context->set_output(0, tmp);
+      LOG(INFO) << "\tOutput: " << tmp.DebugString();
       return;
     }
 
@@ -140,6 +147,7 @@ class StridedSliceOp : public OpKernel {
       OP_REQUIRES(context, tmp.CopyFrom(slice, final_shape),
                   errors::Internal("Copy failed"));
       context->set_output(0, tmp);
+      LOG(INFO) << "\tOutput: " << tmp.DebugString();
       return;
     }
 
@@ -169,6 +177,7 @@ class StridedSliceOp : public OpKernel {
     HandleStridedSliceCase<Device, T, NDIM>(context, begin, end, strides,      \
                                             processing_shape, is_simple_slice, \
                                             result);                           \
+    LOG(INFO) << "\tOutput: " << result->DebugString();                        \
     return;                                                                    \
   }
 

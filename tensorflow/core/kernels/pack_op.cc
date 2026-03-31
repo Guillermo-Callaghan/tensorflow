@@ -56,6 +56,12 @@ class PackOp : public OpKernel {
     const int num = num_inputs();
     const Tensor& first_input = c->input(0);
 
+    LOG(INFO) << "[Guillermo] " << c->op_kernel().def().name();
+    LOG(INFO) << "[Guillermo] Number of inputs: " << c->num_inputs();
+    for (int i = 0; i < c->num_inputs(); ++i) {
+      LOG(INFO) << "\tInput[" << i << "]: " << c->input(i).DebugString();
+    }
+
     int expanded_num_dims = first_input.dims() + 1;
     int axis = axis_;
     if (axis < 0) axis += expanded_num_dims;
@@ -67,12 +73,12 @@ class PackOp : public OpKernel {
 
     TensorShape output_shape(first_input.shape());
     output_shape.InsertDim(axis, num);
-
     // In the num = 1 case, just reshape the input
     if (num == 1) {
       Tensor output;
       CHECK(output.CopyFrom(first_input, output_shape));
       c->set_output(0, output);
+      LOG(INFO) << "\tOutput: " << output_shape.DebugString();
       return;
     }
 
