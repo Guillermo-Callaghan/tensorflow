@@ -102,6 +102,10 @@ struct MarkForCompilationPassFlags {
   // If true enables support of dynamic sizes.
   bool tf_xla_enable_dynamic_sizes;
 
+  // If true, use the same clustering heuristics as dynamic sizes without
+  // enabling dynamic-size lowering/runtime support.
+  bool tf_xla_simulate_dynamic_size_clustering;
+
   // If true enables symbolic content propagation.
   bool tf_xla_enable_symbolic_content;
 

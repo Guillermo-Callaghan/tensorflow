@@ -7,22 +7,22 @@
 
 namespace tensorflow {
 
-namespace {
-
-bool ParseTensorShapeExpressionsEnabled() {
-  bool tf_xla_enable_dynamic_sizes = false;
-  std::vector<tsl::Flag> flag_list = {
-      tsl::Flag("tf_xla_enable_dynamic_sizes", &tf_xla_enable_dynamic_sizes,
-                "XLA flag for enabling XLA dynamic sizes."),
-  };
-  xla::ParseFlagsFromEnvAndIgnoreUnknown("TF_XLA_FLAGS", flag_list);
-  return tf_xla_enable_dynamic_sizes;
-}
-
-}  // namespace
-
 bool TensorShapeExpressionsEnabled() {
-  static const bool enabled = ParseTensorShapeExpressionsEnabled();
+  static const bool enabled = [] {
+    bool tf_xla_enable_dynamic_sizes = false;
+    bool tf_xla_simulate_dynamic_size_clustering = false;
+    std::vector<tsl::Flag> flag_list = {
+        tsl::Flag("tf_xla_enable_dynamic_sizes", &tf_xla_enable_dynamic_sizes,
+                  "XLA flag for enabling XLA dynamic sizes."),
+        tsl::Flag("tf_xla_simulate_dynamic_size_clustering",
+                  &tf_xla_simulate_dynamic_size_clustering,
+                  "XLA flag for matching dynamic-size clustering without "
+                  "enabling dynamic sizes."),
+    };
+    xla::ParseFlagsFromEnvAndIgnoreUnknown("TF_XLA_FLAGS", flag_list);
+    return tf_xla_enable_dynamic_sizes ||
+           tf_xla_simulate_dynamic_size_clustering;
+  }();
   return enabled;
 }
 

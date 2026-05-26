@@ -215,7 +215,8 @@ DimExpr* SimplifyExpr(DimExpr* expr,
                       std::vector<std::unique_ptr<DimExpr>>* arena);
 
 // Returns whether TensorShape should preserve symbolic expressions. The
-// Shape-expression support follows the `tf_xla_enable_dynamic_sizes` flag.
+// shape-expression support follows `tf_xla_enable_dynamic_sizes` and
+// `tf_xla_simulate_dynamic_size_clustering`.
 bool TensorShapeExpressionsEnabled();
 
 // Returns true if the expression proto depends on a symbolic variable.

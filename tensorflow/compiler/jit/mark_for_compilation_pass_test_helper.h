@@ -30,13 +30,15 @@ class MarkForCompilationPassTestHelper {
     bool disable_deadness_analysis;
     bool enable_cluster_scoping;
     bool deterministic_cluster_names;
+    bool simulate_dynamic_size_clustering;
     std::string session_name;  // ConfigProto.Experimental.SessionMetadata.name
 
     Options()
         : enable_global_jit(true),
           disable_deadness_analysis(true),
           enable_cluster_scoping(true),
-          deterministic_cluster_names(false) {}
+          deterministic_cluster_names(false),
+          simulate_dynamic_size_clustering(false) {}
 
     Options WithNoGlobalJit() {
       Options copy = *this;
@@ -59,6 +61,12 @@ class MarkForCompilationPassTestHelper {
     Options WithDeterministicClusterNames() {
       Options copy = *this;
       copy.deterministic_cluster_names = true;
+      return copy;
+    }
+
+    Options WithDynamicSizeClustering() {
+      Options copy = *this;
+      copy.simulate_dynamic_size_clustering = true;
       return copy;
     }
 

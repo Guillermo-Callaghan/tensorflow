@@ -116,6 +116,7 @@ class MarkForCompilationPassImpl {
     bool deterministic_cluster_names;
 
     bool enable_dynamic_sizes;
+    bool simulate_dynamic_size_clustering;
 
     int max_cluster_size;
     int min_cluster_size;
@@ -155,6 +156,11 @@ class MarkForCompilationPassImpl {
   absl::Status Run();
 
  private:
+  bool UseDynamicSizeClustering() const {
+    return debug_options_.enable_dynamic_sizes ||
+           debug_options_.simulate_dynamic_size_clustering;
+  }
+
   // Represents a "cluster" or a connected subgraph of a TensorFlow graph.
   class Cluster {
    public:
@@ -920,7 +926,7 @@ absl::StatusOr<bool> MarkForCompilationPassImpl::Initialize() {
   if (debug_options_.annotate_cluster_id) {
     TF_RETURN_IF_ERROR(AssignAnnotatedClusterIDs());
   }
-  if (debug_options_.enable_dynamic_sizes) {
+  if (UseDynamicSizeClustering()) {
     LogExpressionsViaGraphProperties(*graph_);
     TF_RETURN_IF_ERROR(AssignDimVars());
     auto has_dynamic_input_expression = [&](const Node* n) {
@@ -2160,7 +2166,7 @@ absl::StatusOr<bool> MarkForCompilationPassImpl::TryToContractEdge(
         from, to, "the two nodes do not have same annotated ids");
   }
 
-  if (debug_options_.enable_dynamic_sizes) {
+  if (UseDynamicSizeClustering()) {
     if (from->dim_vars().size() > 1 || to->dim_vars().size() > 1) {
       std::string from_str = "from_vars: ";
       for (auto id : from->dim_vars()) {
@@ -2577,6 +2583,8 @@ absl::Status MarkForCompilationPass::Run(
       flags->tf_xla_deterministic_cluster_names;
   debug_options.enable_dynamic_sizes =
       flags->tf_xla_enable_dynamic_sizes;
+  debug_options.simulate_dynamic_size_clustering =
+      flags->tf_xla_simulate_dynamic_size_clustering;
   debug_options.max_cluster_size = flags->tf_xla_max_cluster_size;
   debug_options.min_cluster_size = flags->tf_xla_min_cluster_size;
   debug_options.fuel = GetPointerToFuel(flags->tf_xla_clustering_fuel);
@@ -2589,7 +2597,7 @@ absl::Status MarkForCompilationPass::Run(
 
 absl::Status MarkForCompilationPass::RunForTest(
     const GraphOptimizationPassOptions& options, bool disable_deadness_analysis,
-    bool deterministic_cluster_names) {
+    bool deterministic_cluster_names, bool simulate_dynamic_size_clustering) {
   MarkForCompilationPassFlags* flags = GetMarkForCompilationPassFlags();
 
   MarkForCompilationPassImpl::DebugOptions debug_options;
@@ -2599,6 +2607,8 @@ absl::Status MarkForCompilationPass::RunForTest(
   debug_options.ignore_xla_compile_attr = true;
   debug_options.deterministic_cluster_names = deterministic_cluster_names;
   debug_options.enable_dynamic_sizes = false;
+  debug_options.simulate_dynamic_size_clustering =
+      simulate_dynamic_size_clustering;
   debug_options.max_cluster_size = flags->tf_xla_max_cluster_size;
   debug_options.min_cluster_size = flags->tf_xla_min_cluster_size;
   debug_options.fuel = GetPointerToFuel(flags->tf_xla_clustering_fuel);

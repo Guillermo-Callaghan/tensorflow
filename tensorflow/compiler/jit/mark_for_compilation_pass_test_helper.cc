@@ -68,7 +68,9 @@ namespace tensorflow {
   return mark_for_compilation_pass.RunForTest(
       opt_options,
       /*disable_deadness_analysis=*/options.disable_deadness_analysis,
-      /*deterministic_cluster_names=*/options.deterministic_cluster_names);
+      /*deterministic_cluster_names=*/options.deterministic_cluster_names,
+      /*simulate_dynamic_size_clustering=*/
+      options.simulate_dynamic_size_clustering);
 }
 
 /*static*/ absl::Status MarkForCompilationPassTestHelper::MarkForCompilation(

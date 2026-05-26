@@ -42,7 +42,8 @@ class MarkForCompilationPass : public GraphOptimizationPass {
  private:
   absl::Status RunForTest(const GraphOptimizationPassOptions& options,
                           bool disable_deadness_analysis,
-                          bool deterministic_cluster_names);
+                          bool deterministic_cluster_names,
+                          bool simulate_dynamic_size_clustering);
 
   friend class MarkForCompilationPassTestHelper;
 };
