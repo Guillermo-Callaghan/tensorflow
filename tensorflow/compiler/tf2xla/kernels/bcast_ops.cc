@@ -20,6 +20,7 @@ limitations under the License.
 #include <vector>
 
 #include "absl/container/inlined_vector.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "tensorflow/compiler/tf2xla/xla_helpers.h"
 #include "tensorflow/compiler/tf2xla/xla_op_kernel.h"
@@ -33,6 +34,15 @@ limitations under the License.
 
 namespace tensorflow {
 namespace {
+
+template <typename VecT>
+std::string SummarizeShapeVectorInputs(const XlaOpKernelContext* ctx,
+                                       const VecT& in0, const VecT& in1) {
+  return absl::StrCat("; input[0] node: ", ctx->op_kernel().def().input(0),
+                      " values: [", absl::StrJoin(in0, ","), "]",
+                      "; input[1] node: ", ctx->op_kernel().def().input(1),
+                      " values: [", absl::StrJoin(in1, ","), "]");
+}
 
 // Given shapes of two tensors, computes the broadcast shape.
 class BCastArgsOp : public XlaOpKernel {
@@ -59,7 +69,8 @@ class BCastArgsOp : public XlaOpKernel {
     OP_REQUIRES(ctx, bcast.IsValid(),
                 errors::InvalidArgument(
                     "Incompatible shapes: [", absl::StrJoin(shapes[0], ","),
-                    "] vs. [", absl::StrJoin(shapes[1], ","), "]"));
+                    "] vs. [", absl::StrJoin(shapes[1], ","), "]",
+                    SummarizeShapeVectorInputs(ctx, shapes[0], shapes[1])));
 
     DataType val_type = ctx->expected_output_dtype(0);
     const int64_t len = bcast.output_shape().size();
@@ -117,7 +128,8 @@ class BCastGradArgsOp : public XlaOpKernel {
     OP_REQUIRES(ctx, bcast.IsValid(),
                 errors::InvalidArgument(
                     "Incompatible shapes: [", absl::StrJoin(shapes[0], ","),
-                    "] vs. [", absl::StrJoin(shapes[1], ","), "]"));
+                    "] vs. [", absl::StrJoin(shapes[1], ","), "]",
+                    SummarizeShapeVectorInputs(ctx, shapes[0], shapes[1])));
     Output(ctx, 0, bcast.grad_x_reduce_idx());
     Output(ctx, 1, bcast.grad_y_reduce_idx());
   }

@@ -105,7 +105,9 @@ class SelectOpV2 : public XlaOpKernel {
     if (!bcast_then_else.IsValid()) {
       ctx->SetStatus(errors::InvalidArgument(
           "Incompatible shapes: ", then_shape.DebugString(), " vs. ",
-          else_shape.DebugString()));
+          else_shape.DebugString(), "; input[1] node: ",
+          ctx->op_kernel().def().input(1), "; input[2] node: ",
+          ctx->op_kernel().def().input(2)));
       return;
     }
     BCast bcast(bcast_then_else.output_shape(), BCast::FromShape(cond_shape),
@@ -114,7 +116,9 @@ class SelectOpV2 : public XlaOpKernel {
       ctx->SetStatus(errors::InvalidArgument(
           "Incompatible shapes: ",
           BCast::ToShape(bcast_then_else.output_shape()).DebugString(), " vs. ",
-          cond_shape.DebugString()));
+          cond_shape.DebugString(), "; broadcasted data from nodes: ",
+          ctx->op_kernel().def().input(1), ", ", ctx->op_kernel().def().input(2),
+          "; input[0] node: ", ctx->op_kernel().def().input(0)));
       return;
     }
 

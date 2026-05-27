@@ -54,7 +54,9 @@ class MatrixTriangularSolveOp : public XlaOpKernel {
     if (!bcast.IsValid()) {
       ctx->SetStatus(errors::InvalidArgument(
           "Incompatible shapes: ", lhs_shape.DebugString(), " vs. ",
-          rhs_shape.DebugString()));
+          rhs_shape.DebugString(), "; input[0] node: ",
+          ctx->op_kernel().def().input(0), "; input[1] node: ",
+          ctx->op_kernel().def().input(1)));
       return;
     }
 

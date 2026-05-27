@@ -650,7 +650,7 @@ absl::Status CompileToLocalExecutable(
                   var_value = shp.dim_size(idx);
                 } else {
                   var_value = *solved_value;
-                  VLOG(1) << "Solved dynamic dimension from "
+                  LOG(INFO) << "Solved dynamic dimension from "
                           << shp.dim_size(idx) << " to " << var_value;
                 }
                 record_dynamic_dim_value(var_value, e);
@@ -1359,15 +1359,15 @@ void XlaRunOp::Compute(OpKernelContext* ctx) {
             VLOG(1) << "Warning: Input index is out of range";
             continue;
           }
-          VLOG(1) << "input shape is " << ctx->input(input_idx).shape()
-                  << ", corresponding xla input shape is " << xla_shape;
+          LOG(INFO) << "input shape is " << ctx->input(input_idx).shape()
+                    << ", corresponding xla input shape is " << xla_shape;
           int64_t size = ctx->input(input_idx).shape().dim_size(dim);
           std::optional<int64_t> dyn_val =
               simplified_expr->solve(
                   size);  // TODO: check if the result is correct later.
           if (dyn_val.has_value()) {
-            VLOG(1) << "Found dynamic input. Real size is: " << size
-                    << ", solved dynamic value is " << *dyn_val;
+            LOG(INFO) << "Found dynamic input. Real size is: " << size
+                      << ", solved dynamic value is " << *dyn_val;
           } else {
             xla::StringPrinter printer;
             simplified_expr->print(&printer);

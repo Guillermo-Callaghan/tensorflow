@@ -462,6 +462,9 @@ absl::Status XlaComputationLaunchContext::PopulateOutputs(
           if (run_options) {
             xla::DExpr batch_size = xla::DExpr::Const(run_options->batch_size());
             xla::DExpr subst_expr = expr.substitute(1, batch_size).simplify();
+            LOG(INFO) << "Substituted expression for Argument "
+                      << i << " dimension " << dim << ": "
+                      << DExprToString(subst_expr);
             if (!subst_expr->is_constant()) {
               return absl::InvalidArgumentError(absl::StrCat(
                   "Runtime shape substitution did not produce an integer "
@@ -479,6 +482,9 @@ absl::Status XlaComputationLaunchContext::PopulateOutputs(
             xla::DExpr batch_size = xla::DExpr::Const(bsr->GetBatchSize());
             // Just substitute Var(1) for now.
             xla::DExpr subst_expr = expr.substitute(1, batch_size).simplify();
+            LOG(INFO) << "Substituted expression for Argument "
+                      << i << " dimension " << dim << ": "
+                      << DExprToString(subst_expr);
             if (!subst_expr->is_constant()) {
               return absl::InvalidArgumentError(absl::StrCat(
                   "Runtime shape substitution did not produce an integer "
