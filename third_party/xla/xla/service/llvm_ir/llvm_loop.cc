@@ -209,6 +209,14 @@ std::unique_ptr<ForLoop> ForLoopNest::AddLoop(
     actual_end = b_->CreateSelect(b_->CreateICmpULT(end_index, expr_value),
                                   end_index, expr_value, "loop_end_min");
   }
+  // Emitting dynamic expressions may materialize helper instructions into the
+  // current function entry block using a different builder. Re-seat the
+  // insertion point at the end of the current block so the loop preheader is
+  // always in a well-formed state before emitting the loop.
+  llvm::BasicBlock* insert_block = b_->GetInsertBlock();
+  if (insert_block != nullptr && insert_block->getTerminator() == nullptr) {
+    b_->SetInsertPoint(insert_block);
+  }
   std::unique_ptr<ForLoop> loop(new ForLoop(
       /*prefix=*/name_, suffix, start_index, actual_end, stride, unroll_mode,
       prevent_vectorization));
